@@ -1,70 +1,120 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Text, View, Button, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import Voice from '@react-native-voice/voice';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 
 export default function HomeScreen() {
+  const [recognized, setRecognized] = useState('');
+  const [started, setStarted] = useState('');
+  const [results, setResults] = useState<string[] | []>([]);
+  const [isListening, setisListening] = useState(false)
+  useEffect(() => {
+    try {
+      Voice.onSpeechRecognized = () => {
+        console.log('onSpeechRecognized')
+
+      }
+      Voice.onSpeechError = (e) => {
+        console.log('speech error', e)
+      }
+      Voice.onSpeechResults = (result) => {
+        console.log("Listener 'onSpeechResults' activado con resultados:", result);
+        if (result && result?.value && result?.value[0]) {
+          setResults(result?.value);
+        }
+
+      };
+      Voice.onSpeechEnd = (end) => {
+        console.log("Listener 'onSpeechEnd' activado");
+        setStarted('Reconocimiento de voz detenido');
+        stopRecognizing()
+        setisListening(false)
+
+
+      };
+    } catch (error) {
+      console.log('error', error)
+    }
+
+    return () => {
+      // Limpiar los listeners para evitar fugas de memoria
+      Voice.removeAllListeners();
+    };
+  }, [])
+
+  const startRecognizing = async () => {
+    try {
+
+      await Voice.start('es-ES');
+      setRecognized('');
+      setResults([]);
+      setStarted('Escuchando...');
+      setisListening(true)
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const stopRecognizing = async () => {
+    try {
+
+      await Voice.stop();
+      setStarted('Reconocimiento de voz detenido');
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setResults([])
+    }, 5000);
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [results])
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <Text style={styles.text}>{started}</Text>
+      <Text style={styles.text}>{recognized}</Text>
+      <TouchableOpacity style={[styles.buttonSpeech,{borderWidth:15,borderColor:isListening ? 'green': 'transparent'}]} onPress={startRecognizing} >
+        <Text style={styles.text}>Pulsa para hablar</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.text}>
+        {(results && results.length) ? results[0] : ''}
+      </Text>
+
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 8,
+    paddingVertical: 100,
+    paddingHorizontal: 20,
+    backgroundColor: "#0E0E0E"
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  text: {
+    fontSize: 18,
+    marginVertical: 10,
+    textAlign: 'center',
+    color: "white",
+    fontWeight: "bold"
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  buttonSpeech: {
+    color: "white",
+    backgroundColor: "rgba(18, 58, 204, 1)",
+    width: 200,
+    height: 200,
+    borderRadius: 60,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 10,
+    shadowColor: "white",
+  }
 });
