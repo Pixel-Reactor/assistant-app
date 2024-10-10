@@ -1,89 +1,62 @@
 import { StyleSheet, Text, View, Button, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import Voice from '@react-native-voice/voice';
+import Feather from '@expo/vector-icons/Feather';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-
+import { useAppContext } from '@/contexts/appContext';
+import * as Speech from 'expo-speech';
+import { FindTask } from '@/functions/FindTask';
+const listaCadenas = ['manzana', 'naranja', 'banana', 'mandarina'];
+const input = 'manznaa';  // Cadena con un error
+import tasklist from '../../TaskList/tasklist.json'
 export default function HomeScreen() {
-  const [recognized, setRecognized] = useState('');
-  const [started, setStarted] = useState('');
-  const [results, setResults] = useState<string[] | []>([]);
-  const [isListening, setisListening] = useState(false)
+
+  const { List, recognized, startRecognizing, started, isListening, results } = useAppContext()
+  const [TaskList, setTaskList] = useState(List)
+
+
   useEffect(() => {
-    try {
-      Voice.onSpeechRecognized = () => {
-        console.log('onSpeechRecognized')
-
-      }
-      Voice.onSpeechError = (e) => {
-        console.log('speech error', e)
-      }
-      Voice.onSpeechResults = (result) => {
-        console.log("Listener 'onSpeechResults' activado con resultados:", result);
-        if (result && result?.value && result?.value[0]) {
-          setResults(result?.value);
-        }
-
-      };
-      Voice.onSpeechEnd = (end) => {
-        console.log("Listener 'onSpeechEnd' activado");
-        setStarted('Reconocimiento de voz detenido');
-        stopRecognizing()
-        setisListening(false)
-
-
-      };
-    } catch (error) {
-      console.log('error', error)
-    }
-
-    return () => {
-      // Limpiar los listeners para evitar fugas de memoria
-      Voice.removeAllListeners();
+    const speak = () => {
+      const thingToSay = 'Hola Equipo';
+      Speech.speak(thingToSay, { language: 'es-ES' });
     };
+
+    // speak()
+    const TaskListNames = tasklist.map((item) => {
+      return item.taskName
+    })
+    console.log('tasklist', TaskListNames)
+    FindTask(TaskListNames, 'repostar')
   }, [])
 
-  const startRecognizing = async () => {
-    try {
-
-      await Voice.start('es-ES');
-      setRecognized('');
-      setResults([]);
-      setStarted('Escuchando...');
-      setisListening(true)
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const stopRecognizing = async () => {
-    try {
-
-      await Voice.stop();
-      setStarted('Reconocimiento de voz detenido');
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setResults([])
-    }, 5000);
-    return () => {
-      clearTimeout(timer)
-    }
-  }, [results])
-
+    setTaskList(List)
+  }, [List])
+  
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>{started}</Text>
-      <Text style={styles.text}>{recognized}</Text>
-      <TouchableOpacity style={[styles.buttonSpeech,{borderWidth:15,borderColor:isListening ? 'green': 'transparent'}]} onPress={startRecognizing} >
-        <Text style={styles.text}>Pulsa para hablar</Text>
-      </TouchableOpacity>
+      <Text style={[styles.text, { color: 'white' }]}>{started}started</Text>
+      {/* <Text style={[styles.text,{color:'white'}]}>{recognized}recognizzed</Text> */}
+      <View style={styles.listContainer}>
+        {TaskList && TaskList.map((item) => {
+          return (
+            <View style={styles.listRow}>
+              <Text style={[styles.text, { color: 'white' }]}>{item.taskName}</Text>
+              <Text style={[styles.text, { color: 'white' }]}>
+                {item.done ?
+                  <MaterialCommunityIcons name="checkbox-marked" size={24} color="white" /> :
+                  <MaterialCommunityIcons name="checkbox-blank-outline" size={24} color="white" />
+                }
+              </Text>
+            </View>
+          )
+        })}
 
-      <Text style={styles.text}>
-        {(results && results.length) ? results[0] : ''}
+      </View>
+      <Text style={[styles.resultsText, { backgroundColor: results && results.length ? 'white' : 'transparent' }]}>
+        {(results && results.length) ? `Tu: ${results[0]}` : ''}
       </Text>
 
     </View>
@@ -95,7 +68,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 100,
+    paddingVertical: 10,
     paddingHorizontal: 20,
     backgroundColor: "#0E0E0E"
   },
@@ -103,8 +76,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginVertical: 10,
     textAlign: 'center',
-    color: "white",
-    fontWeight: "bold"
+    color: "black",
+    padding: 10,
+    borderRadius: 20
   },
   buttonSpeech: {
     color: "white",
@@ -114,7 +88,30 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 10,
+    elevation: 4,
     shadowColor: "white",
+  },
+  listContainer: {
+    borderWidth: 1,
+
+    flex: 1,
+    width: '100%'
+  },
+  listRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderColor: 'white'
+  },
+  resultsText:{
+    fontSize: 18,
+    marginVertical: 10,
+    textAlign: 'center',
+    color: "black",
+   
+    padding: 10,
+    borderRadius: 20,
+    position:'absolute',
+    bottom:70
   }
 });
