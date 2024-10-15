@@ -1,18 +1,30 @@
 [
     {
-        "taskName":"ir a la compra",
+        "taskName":"Latiguillos de las jaulas instalados y en buen estado",
         "done":false
     },
     {
-        "taskName":"Repostar camión",
+        "taskName":"Ganchos y soldaduras de las jaulas en buen estado",
         "done":false
     },
     {
-        "taskName":"Preparar comida",
+        "taskName":"Péndulos de jaulas I350 en buen estado",
         "done":false
     },
     {
-        "taskName":"Limpiar la casa",
+        "taskName":"Estructura y barras de cierre horizontal de las jaulas en buen estado",
+        "done":false
+    },
+    {
+        "taskName":"Barras verticales ajustadas a las barras de cierre de cada jaula, según configuración de la carga",
+        "done":false
+    },
+    {
+        "taskName":"Barras verticales ajustadas a la barra superior",
+        "done":false
+    },
+    {
+        "taskName":"Eslingas sujetas adecuadamente al chasis del camión",
         "done":false
     }
 ]

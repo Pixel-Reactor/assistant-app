@@ -1,9 +1,12 @@
-export const AnalizeVoice = (voicetext: string[]) => {
+export const analizeVoice = (voicetext: string[]) => {
+
     if (voicetext === undefined) {
         console.log('no hay voice text')
+        return
     }
     if (!voicetext || !voicetext.length) {
         console.log('voice input not detected')
+        return
     }
 
     let command 
@@ -11,7 +14,7 @@ export const AnalizeVoice = (voicetext: string[]) => {
 
 
     const voicetextInput = voicetext[0] || ''
-    console.log('voice text input', voicetextInput)
+    // console.log('voice text input', voicetextInput)
     const commandMark = 'marca'
     const commandUnmark = 'desmarca'
     const task = 'tarea'
@@ -23,12 +26,12 @@ export const AnalizeVoice = (voicetext: string[]) => {
     if (indextaskCommand) {
         const TaskName = voicetextInput.slice(indextaskCommand + 1);
         tasknamedetected = TaskName
-        console.log('task found', TaskName)
+        // console.log('task found', TaskName)
     }
     indexCommandMark > indexCommandUnmark ? command = 'check' : 'uncheck'
 
-    console.log('voiceText', voicetext[0])
-    console.log('indices de comando y tarea', indexCommandMark, indextaskCommand)
+    // console.log('voiceText', voicetext[0])
+    // console.log('indices de comando y tarea', indexCommandMark, indextaskCommand)
 
     return {
         command: command,

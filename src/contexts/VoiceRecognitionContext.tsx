@@ -1,8 +1,9 @@
-import { AnalizeVoice } from '@/functions/AnalizeVoiceComand';
-import { FindTask } from '@/functions/FindTask';
-import tasklist from '@/mock-data/tasklist.json';
+import { analizeVoice } from '@/functions/AnalizeVoiceComand';
+import { findTask } from '@/functions/FindTask';
+import { TaskModel } from '@/models/TaskModel';
 import Voice from '@react-native-voice/voice';
 import React, { FC, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+
 interface Props {
     children: ReactNode
 }
@@ -14,7 +15,8 @@ interface VoiceRecognitionContextDataType {
     started: string;
     startRecognizing: () => void;
     stopRecognizing: () => void;
-    List: any;
+    taskList: TaskModel[];
+    setTaskList: (tasks: TaskModel[]) => void
 }
 
 export const VoiceRecognitionContext = React.createContext<VoiceRecognitionContextDataType>({
@@ -24,9 +26,9 @@ export const VoiceRecognitionContext = React.createContext<VoiceRecognitionConte
     results: [],
     started: '',
     startRecognizing: () => { },
-    stopRecognizing: () => {},
-    List: []
-
+    stopRecognizing: () => { }, 
+    taskList: [],
+    setTaskList: (tasks: TaskModel[]) => {}
 
 })
 
@@ -40,16 +42,20 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
     const [started, setStarted] = useState('');
     const [results, setResults] = useState<string[] | []>([]);
     const [isListening, setisListening] = useState(false);
-    const [List, setList] = useState(tasklist)
+    const [taskList, setTaskList] = useState<TaskModel[]>([])
+
     useEffect(() => {
         try {
             Voice.onSpeechRecognized = () => {
                 console.log('onSpeechRecognized')
-
             }
             Voice.onSpeechError = (e) => {
-                console.error('speech error', e)
+                console.log('speech error context', e);
+                destroyVoice()
+                setStarted('Reconocimiento de voz detenido');
+                stopRecognizing()
             }
+
             Voice.onSpeechResults = (result) => {
                 console.log("Listener 'onSpeechResults' activado con resultados:", result);
                 if (result && result?.value && result?.value[0]) {
@@ -59,24 +65,32 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
                 }
 
             };
+            
             Voice.onSpeechEnd = (end) => {
                 console.log("Listener 'onSpeechEnd' activado");
                 setStarted('Reconocimiento de voz detenido');
                 stopRecognizing()
-                setisListening(false)
+
             };
         } catch (error) {
-            console.error('error', error)
+            console.log('error', error)
         }
 
         return () => {
-            Voice.stop();
+            Voice.stop()
             Voice.removeAllListeners();
         };
     }, [])
+
+    const destroyVoice = async () => {
+        await Voice.destroy();
+        await Voice.stop()
+    }
     const startRecognizing = async () => {
         try {
-            if (isListening) { return }
+            const available = await Voice.isAvailable();
+            console.log('Voice Available?', available)
+            if (isListening||!available) { return }
             await Voice.start('es-ES');
             setRecognized('');
             setResults([]);
@@ -89,9 +103,10 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
 
     const stopRecognizing = async () => {
         try {
-            console.log('stop recognizing')
+
             await Voice.stop();
             setStarted('Reconocimiento de voz detenido');
+            setisListening(false)
         } catch (e) {
             console.error(e);
         }
@@ -99,31 +114,30 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
 
 
     useEffect(() => {
-        const response = AnalizeVoice(results)
+
+        if (results.length < 1) { return }
+        const response = analizeVoice(results)
         console.log('response from analizeVoice', response)
-        const TaskListNames = List.map((item) => {
+        const TaskListNames = taskList.map((item: TaskModel) => {
             return item.taskName
         })
-        const taskFound = FindTask(TaskListNames, response.task);
+        const taskFound = findTask(TaskListNames, response.task);
         console.log('taskFound context', taskFound)
 
-        
-
-        const toggleTaskDone = (taskFound) => {
-            setList(prevTasks =>
-                prevTasks.map(task =>
+        const toggleTaskDone = (taskFound: string) => {
+            setTaskList((prevTasks: any) => {
+                return prevTasks.map(task =>
                     task.taskName === taskFound
                         ? { ...task, done: true }
                         : task
                 )
+            }
             );
         };
         // toggleTaskDone(taskFound)
 
-
-
-        const ToggleTaskUndone = (taskFound) => {
-            setList(prevTasks =>
+        const toggleTaskUndone = (taskFound) => {
+            setTaskList(prevTasks =>
                 prevTasks.map(task =>
                     task.taskName === taskFound
                         ? { ...task, done: false }
@@ -131,13 +145,13 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
                 )
             );
         };
-        response.command === 'check' ? toggleTaskDone(taskFound) : ToggleTaskUndone(taskFound)
+        response.command === 'check' ? toggleTaskDone(taskFound) : toggleTaskUndone(taskFound)
 
     }, [results])
 
     const value = useMemo(
-        () => ({ startRecognizing, stopRecognizing, recognized, results, started, isListening, List }),
-        [startRecognizing, stopRecognizing, recognized, results, started, isListening, List]
+        () => ({ startRecognizing, stopRecognizing, setTaskList, recognized, results, started, isListening, taskList }),
+        [startRecognizing, stopRecognizing, setTaskList,recognized, results, started, isListening, taskList]
     )
     return (
         <VoiceRecognitionContext.Provider value={value}>

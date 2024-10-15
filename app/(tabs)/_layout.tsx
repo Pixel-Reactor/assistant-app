@@ -1,22 +1,25 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
-import { useVoiceRecognitionContext } from '@/contexts/VoiceRecognitionContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { useVoiceRecognitionContext } from '@/contexts/VoiceRecognitionContext';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { menuOn, recognized, startRecognizing, stopRecognizing, started, isListening, results } = useVoiceRecognitionContext()
-
+  const { recognized, startRecognizing, stopRecognizing, started, isListening, results } = useVoiceRecognitionContext()
+  const [isCamaraOpen, setisCamaraOpen] = useState(false)
   return (
     <View style={styles.container}>
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
           headerShown: true,
+         
         }}>
         <Tabs.Screen
           name="index"
@@ -28,18 +31,22 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="explore"
+          name="scan"
+          listeners={{
+            focus: () => setisCamaraOpen(true),
+            blur: () => setisCamaraOpen(false),
+          }}
           options={{
-            title: 'Explore',
+            title: 'Scan',
             tabBarIcon: ({ color, focused }) => (
-              <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+              <MaterialIcons name="photo-camera" size={30} color={focused ? 'white' : 'gray'} />
             ),
           }}
         />
       </Tabs>
-      <TouchableOpacity style={[styles.buttonSpeech, { borderWidth: 15, borderColor: isListening ? 'green' : 'transparent' }]} onPress={!isListening ? startRecognizing : stopRecognizing} >
-        <Text style={styles.text}><FontAwesome name="microphone" size={40} color="white" /></Text>
-      </TouchableOpacity>
+      {!isCamaraOpen && <TouchableOpacity style={[styles.buttonSpeech, { borderWidth: 5, borderColor: isListening ? 'green' : 'transparent' }]} onPress={isListening ? stopRecognizing : startRecognizing} >
+        <Text style={styles.text}><FontAwesome name="microphone" size={30} color="white" /></Text>
+      </TouchableOpacity>}
     </View>
   );
 }
@@ -50,24 +57,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     position: 'relative',
-
-
+   
   },
   buttonSpeech: {
     color: "white",
     backgroundColor: "rgba(18, 58, 204, 1)",
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
     borderRadius: 60,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 5,
+    elevation: 10,
     shadowColor: "white",
     position: 'absolute',
     bottom: 20,
     left: '50%',
-    marginLeft: -50,
-    borderWidth: 15,
+    marginLeft: -40,
+    borderWidth: 5,
+    zIndex: 40,
 
   }, text: {
     fontSize: 18,
