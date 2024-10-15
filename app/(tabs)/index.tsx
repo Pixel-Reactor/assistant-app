@@ -7,8 +7,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAppContext } from '@/contexts/appContext';
 import * as Speech from 'expo-speech';
 import { FindTask } from '@/functions/FindTask';
-const listaCadenas = ['manzana', 'naranja', 'banana', 'mandarina'];
-const input = 'manznaa';  // Cadena con un error
+// const listaCadenas = ['manzana', 'naranja', 'banana', 'mandarina'];
+// const input = 'manznaa';  // Cadena con un error
 import tasklist from '@/mock-data/tasklist.json'
 export default function HomeScreen() {
 
@@ -37,19 +37,19 @@ export default function HomeScreen() {
   
   return (
     <View style={styles.container}>
-      <Text style={[styles.text, { color: 'white' }]}>{started}started</Text>
+      <Text style={[styles.text, { color: 'white' }]}>{started}</Text>
       {/* <Text style={[styles.text,{color:'white'}]}>{recognized}recognizzed</Text> */}
       <View style={styles.listContainer}>
-        {TaskList && TaskList.map((item) => {
+        {TaskList && TaskList.map((item:any,i:any) => {
           return (
-            <View style={styles.listRow}>
-              <Text style={[styles.text, { color: 'white' }]}>{item.taskName}</Text>
-              <Text style={[styles.text, { color: 'white' }]}>
+            <View key={i} style={styles.listRow}>
+              <Text style={[styles.text, { color: 'white',textAlign:'left',maxWidth:'90%' }]}>{item.taskName}</Text>
+             
                 {item.done ?
                   <MaterialCommunityIcons name="checkbox-marked" size={24} color="white" /> :
                   <MaterialCommunityIcons name="checkbox-blank-outline" size={24} color="white" />
                 }
-              </Text>
+            
             </View>
           )
         })}
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 5,
     backgroundColor: "#0E0E0E"
   },
   text: {
@@ -93,22 +93,22 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     borderWidth: 1,
-
     flex: 1,
-    width: '100%'
+    width: '100%',
   },
   listRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderColor: 'white'
+    borderColor: 'white',
+    alignItems:'center',
+    paddingHorizontal:5
   },
   resultsText:{
     fontSize: 18,
     marginVertical: 10,
     textAlign: 'center',
     color: "black",
-   
     padding: 10,
     borderRadius: 20,
     position:'absolute',

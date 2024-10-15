@@ -43,10 +43,14 @@ const AppProvider: FC<Props> = ({ children }) => {
         try {
             Voice.onSpeechRecognized = () => {
                 console.log('onSpeechRecognized')
-
             }
             Voice.onSpeechError = (e) => {
-                console.log('speech error', e)
+                console.log('speech error context', e);
+                destroyVoice()
+                setStarted('Reconocimiento de voz detenido');
+                stopRecognizing()
+               
+               
             }
             Voice.onSpeechResults = (result) => {
                 console.log("Listener 'onSpeechResults' activado con resultados:", result);
@@ -61,19 +65,22 @@ const AppProvider: FC<Props> = ({ children }) => {
                 console.log("Listener 'onSpeechEnd' activado");
                 setStarted('Reconocimiento de voz detenido');
                 stopRecognizing()
-                setisListening(false)
-
-
+                
             };
         } catch (error) {
             console.log('error', error)
         }
 
         return () => {
-            Voice.stop();
+            Voice.stop()
             Voice.removeAllListeners();
         };
     }, [])
+
+    const destroyVoice = async()=>{
+        await Voice.destroy();
+        await Voice.stop()
+    }
     const startRecognizing = async () => {
         try {
             if (isListening) { return }
@@ -92,6 +99,7 @@ const AppProvider: FC<Props> = ({ children }) => {
 
             await Voice.stop();
             setStarted('Reconocimiento de voz detenido');
+            setisListening(false)
         } catch (e) {
             console.error(e);
         }
@@ -99,6 +107,8 @@ const AppProvider: FC<Props> = ({ children }) => {
 
 
     useEffect(() => {
+       
+        if(results.length < 1){return}
         const response = AnalizeVoice(results)
         console.log('response from analizeVoice', response)
         const TaskListNames = List.map((item) => {
@@ -106,8 +116,6 @@ const AppProvider: FC<Props> = ({ children }) => {
         })
         const taskFound = FindTask(TaskListNames, response.task);
         console.log('taskFound context', taskFound)
-
-        
 
         const toggleTaskDone = (taskFound) => {
             setList(prevTasks =>
@@ -119,8 +127,6 @@ const AppProvider: FC<Props> = ({ children }) => {
             );
         };
         // toggleTaskDone(taskFound)
-
-
 
         const ToggleTaskUndone = (taskFound) => {
             setList(prevTasks =>
