@@ -1,38 +1,40 @@
-import React, { useContext, useEffect, useState, useMemo, Children, Dispatch, SetStateAction, ReactNode, FC } from 'react'
-import Voice from '@react-native-voice/voice';
-import tasklist from '@/mock-data/tasklist.json'
 import { AnalizeVoice } from '@/functions/AnalizeVoiceComand';
 import { FindTask } from '@/functions/FindTask';
+import tasklist from '@/mock-data/tasklist.json';
+import Voice from '@react-native-voice/voice';
+import React, { FC, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 interface Props {
     children: ReactNode
 }
-interface AppContextDataType {
+interface VoiceRecognitionContextDataType {
 
     recognized: string;
     isListening: boolean;
     results: string[] | [];
     started: string;
     startRecognizing: () => void;
+    stopRecognizing: () => void;
     List: any;
 }
 
-export const AppContext = React.createContext<AppContextDataType>({
+export const VoiceRecognitionContext = React.createContext<VoiceRecognitionContextDataType>({
 
     recognized: '',
     isListening: false,
     results: [],
     started: '',
     startRecognizing: () => { },
+    stopRecognizing: () => {},
     List: []
 
 
 })
 
-export const useAppContext = () => {
-    return useContext(AppContext)
+export const useVoiceRecognitionContext = () => {
+    return useContext(VoiceRecognitionContext)
 }
 
-const AppProvider: FC<Props> = ({ children }) => {
+const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
 
     const [recognized, setRecognized] = useState('');
     const [started, setStarted] = useState('');
@@ -46,7 +48,7 @@ const AppProvider: FC<Props> = ({ children }) => {
 
             }
             Voice.onSpeechError = (e) => {
-                console.log('speech error', e)
+                console.error('speech error', e)
             }
             Voice.onSpeechResults = (result) => {
                 console.log("Listener 'onSpeechResults' activado con resultados:", result);
@@ -62,11 +64,9 @@ const AppProvider: FC<Props> = ({ children }) => {
                 setStarted('Reconocimiento de voz detenido');
                 stopRecognizing()
                 setisListening(false)
-
-
             };
         } catch (error) {
-            console.log('error', error)
+            console.error('error', error)
         }
 
         return () => {
@@ -89,7 +89,7 @@ const AppProvider: FC<Props> = ({ children }) => {
 
     const stopRecognizing = async () => {
         try {
-
+            console.log('stop recognizing')
             await Voice.stop();
             setStarted('Reconocimiento de voz detenido');
         } catch (e) {
@@ -140,10 +140,10 @@ const AppProvider: FC<Props> = ({ children }) => {
         [startRecognizing, stopRecognizing, recognized, results, started, isListening, List]
     )
     return (
-        <AppContext.Provider value={value}>
+        <VoiceRecognitionContext.Provider value={value}>
             {children}
-        </AppContext.Provider>
+        </VoiceRecognitionContext.Provider>
     )
 }
 
-export default AppProvider
+export default VoiceRecognitionProvider

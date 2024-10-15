@@ -3,41 +3,41 @@ import React from 'react';
 
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
+import { useVoiceRecognitionContext } from '@/contexts/VoiceRecognitionContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { StyleSheet,View,Text,TouchableOpacity } from 'react-native';
-import { useAppContext } from '@/contexts/appContext';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const {menuOn,recognized,startRecognizing,started,isListening,results} = useAppContext()
+  const { menuOn, recognized, startRecognizing, stopRecognizing, started, isListening, results } = useVoiceRecognitionContext()
 
   return (
     <View style={styles.container}>
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: true,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
-    <TouchableOpacity style={[styles.buttonSpeech,{borderWidth:15,borderColor:isListening ? 'green': 'transparent'}]} onPress={startRecognizing} >
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+          headerShown: true,
+        }}>
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="explore"
+          options={{
+            title: 'Explore',
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+            ),
+          }}
+        />
+      </Tabs>
+      <TouchableOpacity style={[styles.buttonSpeech, { borderWidth: 15, borderColor: isListening ? 'green' : 'transparent' }]} onPress={!isListening ? startRecognizing : stopRecognizing} >
         <Text style={styles.text}><FontAwesome name="microphone" size={40} color="white" /></Text>
       </TouchableOpacity>
     </View>
@@ -46,12 +46,12 @@ export default function TabLayout() {
 
 
 const styles = StyleSheet.create({
- 
+
   container: {
-  flex:1,
-  position:'relative',
-  
- 
+    flex: 1,
+    position: 'relative',
+
+
   },
   buttonSpeech: {
     color: "white",
@@ -64,12 +64,12 @@ const styles = StyleSheet.create({
     elevation: 5,
     shadowColor: "white",
     position: 'absolute',
-    bottom: 20,      
-    left: '50%',     
+    bottom: 20,
+    left: '50%',
     marginLeft: -50,
     borderWidth: 15,
-    
-  },text: {
+
+  }, text: {
     fontSize: 18,
     marginVertical: 10,
     textAlign: 'center',

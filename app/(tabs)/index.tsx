@@ -4,7 +4,7 @@ import Feather from '@expo/vector-icons/Feather';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { useAppContext } from '@/contexts/appContext';
+import { useVoiceRecognitionContext } from '@/contexts/VoiceRecognitionContext';
 import * as Speech from 'expo-speech';
 import { FindTask } from '@/functions/FindTask';
 const listaCadenas = ['manzana', 'naranja', 'banana', 'mandarina'];
@@ -12,7 +12,7 @@ const input = 'manznaa';  // Cadena con un error
 import tasklist from '@/mock-data/tasklist.json'
 export default function HomeScreen() {
 
-  const { List, recognized, startRecognizing, started, isListening, results } = useAppContext()
+  const { List, recognized, startRecognizing, started, isListening, results } = useVoiceRecognitionContext()
   const [TaskList, setTaskList] = useState(List)
 
 
@@ -40,7 +40,7 @@ export default function HomeScreen() {
       <Text style={[styles.text, { color: 'white' }]}>{started}started</Text>
       {/* <Text style={[styles.text,{color:'white'}]}>{recognized}recognizzed</Text> */}
       <View style={styles.listContainer}>
-        {TaskList && TaskList.map((item) => {
+        {TaskList && TaskList.map((item: any) => {
           return (
             <View style={styles.listRow}>
               <Text style={[styles.text, { color: 'white' }]}>{item.taskName}</Text>
