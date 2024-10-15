@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useMemo, Children, Dispatch, SetStateAction, ReactNode, FC } from 'react'
 import Voice from '@react-native-voice/voice';
-import tasklist from '../TaskList/tasklist.json'
+import tasklist from '@/mock-data/tasklist.json'
 import { AnalizeVoice } from '@/functions/AnalizeVoiceComand';
 import { FindTask } from '@/functions/FindTask';
 interface Props {

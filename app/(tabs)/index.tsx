@@ -9,7 +9,7 @@ import * as Speech from 'expo-speech';
 import { FindTask } from '@/functions/FindTask';
 const listaCadenas = ['manzana', 'naranja', 'banana', 'mandarina'];
 const input = 'manznaa';  // Cadena con un error
-import tasklist from '../../TaskList/tasklist.json'
+import tasklist from '@/mock-data/tasklist.json'
 export default function HomeScreen() {
 
   const { List, recognized, startRecognizing, started, isListening, results } = useAppContext()
