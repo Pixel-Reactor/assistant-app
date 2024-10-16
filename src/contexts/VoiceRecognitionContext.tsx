@@ -1,4 +1,4 @@
-import { analizeVoice } from '@/functions/AnalizeVoiceComand';
+import { analizeVoice, VoiceAnalysisResult, VoiceCommandAction } from '@/functions/AnalizeVoiceComand';
 import { findTask } from '@/functions/FindTask';
 import { TaskModel } from '@/models/TaskModel';
 import Voice from '@react-native-voice/voice';
@@ -26,9 +26,9 @@ export const VoiceRecognitionContext = React.createContext<VoiceRecognitionConte
     results: [],
     started: '',
     startRecognizing: () => { },
-    stopRecognizing: () => { }, 
+    stopRecognizing: () => { },
     taskList: [],
-    setTaskList: (tasks: TaskModel[]) => {}
+    setTaskList: (tasks: TaskModel[]) => { }
 
 })
 
@@ -65,7 +65,7 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
                 }
 
             };
-            
+
             Voice.onSpeechEnd = (end) => {
                 console.log("Listener 'onSpeechEnd' activado");
                 setStarted('Reconocimiento de voz detenido');
@@ -90,7 +90,7 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
         try {
             const available = await Voice.isAvailable();
             console.log('Voice Available?', available)
-            if (isListening||!available) { return }
+            if (isListening || !available) { return }
             await Voice.start('es-ES');
             setRecognized('');
             setResults([]);
@@ -116,15 +116,27 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
     useEffect(() => {
 
         if (results.length < 1) { return }
-        const response = analizeVoice(results)
-        console.log('response from analizeVoice', response)
+        const voiceAnalysisResult: VoiceAnalysisResult | undefined  = analizeVoice(results)
+
+        if (voiceAnalysisResult) {
+            console.log('response from analizeVoice', voiceAnalysisResult)
+        }
+        else {
+            console.error('no response from analizeVoice')
+            return
+        }
+
         const TaskListNames = taskList.map((item: TaskModel) => {
             return item.taskName
         })
-        const taskFound = findTask(TaskListNames, response.task);
-        console.log('taskFound context', taskFound)
+        const taskFound = findTask(TaskListNames, voiceAnalysisResult.task);
 
-        const toggleTaskDone = (taskFound: string) => {
+        if(!taskFound){
+            console.error('No se ha encontrado la tarea')
+            return
+        }
+
+        const setTaskDone = (taskFound: string) => {
             setTaskList((prevTasks: any) => {
                 return prevTasks.map(task =>
                     task.taskName === taskFound
@@ -134,9 +146,8 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
             }
             );
         };
-        // toggleTaskDone(taskFound)
 
-        const toggleTaskUndone = (taskFound) => {
+        const setTaskUndone = (taskFound: string) => {
             setTaskList(prevTasks =>
                 prevTasks.map(task =>
                     task.taskName === taskFound
@@ -145,13 +156,34 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
                 )
             );
         };
-        response.command === 'check' ? toggleTaskDone(taskFound) : toggleTaskUndone(taskFound)
+
+        const dispatchVoiceCommand = (voiceAnalysisResult: VoiceAnalysisResult, taskFound: string) => {
+            
+            
+            switch (voiceAnalysisResult.commandAction) {
+                case VoiceCommandAction.Mark:
+                    setTaskDone(taskFound)
+                    break;
+                case VoiceCommandAction.Unmark:
+                    setTaskUndone(taskFound)
+                    break;
+                case VoiceCommandAction.Read:
+                    //TODO: Implementar lectura de tareas
+                    console.log('Read command')
+                    break;
+                default:
+                    console.error('Comando no reconocido')
+            }
+        }
+    
+
+        dispatchVoiceCommand(voiceAnalysisResult, taskFound)
 
     }, [results])
 
     const value = useMemo(
         () => ({ startRecognizing, stopRecognizing, setTaskList, recognized, results, started, isListening, taskList }),
-        [startRecognizing, stopRecognizing, setTaskList,recognized, results, started, isListening, taskList]
+        [startRecognizing, stopRecognizing, setTaskList, recognized, results, started, isListening, taskList]
     )
     return (
         <VoiceRecognitionContext.Provider value={value}>
