@@ -21,6 +21,10 @@ const commandWordsGroups: { [key in VoiceCommandAction]: string[] } = {
     [VoiceCommandAction.Read]: read
 };
 
+const getAllCommands = () => {
+    return Object.values(commandWordsGroups).flat()
+}
+
 // Crear un diccionario dinámicamente a partir de los grupos de palabras
 const commandWords: { [key: string]: VoiceCommandAction } = Object.entries(commandWordsGroups)
     .reduce((acc, [action, words]) => {
@@ -45,14 +49,14 @@ export interface VoiceAnalysisResult {
 
 const getVoiceCommand = (voicetext: string) => {
 
-    const compoundArray = [...mark, ...unmark]
+    const allCommands = getAllCommands()
     const voiceWords = voicetext.split(' ')
 
     /**
      * De las palabras detectadas en el texto de voz, se obtiene la distancia de cada una de ellas con los comandos
      */
     const wordsWithDistance = voiceWords.map((text, i) => {
-        return getWordWithDistance(compoundArray, text)
+        return getWordWithDistance(allCommands, text)
     }).flat().sort((a, b) => a.distance - b.distance)
     console.log('wordsWithDistance', wordsWithDistance)
 
@@ -63,7 +67,7 @@ const getVoiceCommand = (voicetext: string) => {
     if (matchedWords.length == 0) {
 
         if (wordsWithDistance.length > 0) {
-            const commandFound = findMostLikelyWord(compoundArray, wordsWithDistance[0].word)
+            const commandFound = findMostLikelyWord(allCommands, wordsWithDistance[0].word)
             if (commandFound) {
                 return commandFound
             }
