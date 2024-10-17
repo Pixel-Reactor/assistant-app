@@ -2,8 +2,9 @@ import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import { useState, useRef } from 'react';
 import { Button, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-
+import { router } from 'expo-router';
+import { useVoiceRecognitionContext } from '@/contexts/VoiceRecognitionContext';
+import { getTasks } from '@/api/api';
 export default function TabTwoScreen() {
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
@@ -11,6 +12,7 @@ export default function TabTwoScreen() {
   const [isCapturing, setIsCapturing] = useState(false);
   const [isLoading, setisLoading] = useState(false)
   const [photoUri, setPhotoUri] = useState(null); // Estado para guardar la URI de la foto
+  const { setTaskList } = useVoiceRecognitionContext()
 
   if (!permission) {
 
@@ -32,13 +34,17 @@ export default function TabTwoScreen() {
   }
   const ShotAndUpload = async () => {
     setisLoading(true);
+    const list = await getTasks()
+
     setTimeout(() => {
+      setTaskList(list)
+      router.navigate('/(tabs)/')
       setisLoading(false)
     }, 3000);
     if (cameraRef.current && !isCapturing) {
       setIsCapturing(true);
       try {
-        const photo = await cameraRef.current.takePictureAsync({ base64: true });
+        const photo = await cameraRef?.current?.takePictureAsync({ base64: true });
         console.log(photo.uri)
 
       } catch (error) {
@@ -127,19 +133,19 @@ const styles = StyleSheet.create({
   },
   loadContainer: {
     width: '100%',
-    height: '100%', 
+    height: '100%',
     backgroundColor: 'black',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 100,
     position: 'absolute',
   },
-  loaderText:{
-    fontSize:20,
-    color:'black',
-    backgroundColor:'white',
-    padding:10,
-    borderRadius:50,
+  loaderText: {
+    fontSize: 20,
+    color: 'black',
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 50,
 
   }
 });
