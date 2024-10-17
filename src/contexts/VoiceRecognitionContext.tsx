@@ -1,3 +1,4 @@
+import { ProcedureModel } from '@/models/ProcedureModel';
 import { analizeVoice, VoiceAnalysisResult, VoiceCommandAction } from '@/functions/AnalizeVoiceComand';
 import { findTask } from '@/functions/FindTask';
 import { TaskModel } from '@/models/TaskModel';
@@ -15,8 +16,8 @@ interface VoiceRecognitionContextDataType {
     started: string;
     startRecognizing: () => void;
     stopRecognizing: () => void;
-    taskList: TaskModel[];
-    setTaskList: (tasks: TaskModel[]) => void
+    procedure: ProcedureModel | undefined;
+    setProcedure: (procedure: ProcedureModel) => void
 }
 
 export const VoiceRecognitionContext = React.createContext<VoiceRecognitionContextDataType>({
@@ -27,8 +28,8 @@ export const VoiceRecognitionContext = React.createContext<VoiceRecognitionConte
     started: '',
     startRecognizing: () => { },
     stopRecognizing: () => { },
-    taskList: [],
-    setTaskList: (tasks: TaskModel[]) => { }
+    procedure: undefined,
+    setProcedure: (procedure: ProcedureModel | undefined) => { }
 
 })
 
@@ -42,7 +43,7 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
     const [started, setStarted] = useState('');
     const [results, setResults] = useState<string[] | []>([]);
     const [isListening, setisListening] = useState(false);
-    const [taskList, setTaskList] = useState<TaskModel[]>([])
+    const [procedure, setProcedure] = useState<ProcedureModel>()
 
     useEffect(() => {
         try {
@@ -63,7 +64,6 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
                 } else {
                     console.log('else')
                 }
-
             };
 
             Voice.onSpeechEnd = (end) => {
@@ -116,7 +116,7 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
     useEffect(() => {
 
         if (results.length < 1) { return }
-        const voiceAnalysisResult: VoiceAnalysisResult | undefined  = analizeVoice(results)
+        const voiceAnalysisResult: VoiceAnalysisResult | undefined = analizeVoice(results)
 
         if (voiceAnalysisResult) {
             console.log('response from analizeVoice', voiceAnalysisResult)
@@ -126,46 +126,49 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
             return
         }
 
-        const TaskListNames = taskList.map((item: TaskModel) => {
+        if (!procedure) {
+            console.error('No se ha detectado un procedimiento')
+            return
+        }
+
+        if (!procedure.tasks) {
+            console.error('No se ha detectado una lista de tareas en el procedimiento actual')
+            return
+        }
+
+        const TaskListNames = procedure.tasks.map((item: TaskModel) => {
             return item.taskName
         })
         const taskFound = findTask(TaskListNames, voiceAnalysisResult.task);
 
-        if(!taskFound){
+        if (!taskFound) {
             console.error('No se ha encontrado la tarea')
             return
         }
 
-        const setTaskDone = (taskFound: string) => {
-            setTaskList((prevTasks: any) => {
-                return prevTasks.map(task =>
-                    task.taskName === taskFound
-                        ? { ...task, done: true }
-                        : task
-                )
-            }
-            );
-        };
+        const setTaskStatus = (taskFound: string, done: boolean) => {
+            setProcedure((prevProcedure: any) => {
+                return {
+                    ...prevProcedure,
+                    tasks: prevProcedure.tasks.map((task: TaskModel) =>
+                        task.taskName === taskFound
+                            ? { ...task, done: done }
+                            : task
+                    )
+                }
 
-        const setTaskUndone = (taskFound: string) => {
-            setTaskList(prevTasks =>
-                prevTasks.map(task =>
-                    task.taskName === taskFound
-                        ? { ...task, done: false }
-                        : task
-                )
-            );
+            });
         };
 
         const dispatchVoiceCommand = (voiceAnalysisResult: VoiceAnalysisResult, taskFound: string) => {
-            
-            
+
+
             switch (voiceAnalysisResult.commandAction) {
                 case VoiceCommandAction.Mark:
-                    setTaskDone(taskFound)
+                    setTaskStatus(taskFound, true)
                     break;
                 case VoiceCommandAction.Unmark:
-                    setTaskUndone(taskFound)
+                    setTaskStatus(taskFound, false)
                     break;
                 case VoiceCommandAction.Read:
                     //TODO: Implementar lectura de tareas
@@ -175,15 +178,15 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
                     console.error('Comando no reconocido')
             }
         }
-    
+
 
         dispatchVoiceCommand(voiceAnalysisResult, taskFound)
 
     }, [results])
 
     const value = useMemo(
-        () => ({ startRecognizing, stopRecognizing, setTaskList, recognized, results, started, isListening, taskList }),
-        [startRecognizing, stopRecognizing, setTaskList, recognized, results, started, isListening, taskList]
+        () => ({ startRecognizing, stopRecognizing, setProcedure, recognized, results, started, isListening, procedure }),
+        [startRecognizing, stopRecognizing, setProcedure, recognized, results, started, isListening, procedure]
     )
     return (
         <VoiceRecognitionContext.Provider value={value}>

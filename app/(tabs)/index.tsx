@@ -1,16 +1,19 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import React, { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { getTasks } from '@/api/api';
+import { getProcedure } from '@/api/api';
 import { useVoiceRecognitionContext } from '@/contexts/VoiceRecognitionContext';
 import { findTask } from '@/functions/FindTask';
 import { TaskModel } from '@/models/TaskModel';
+import { ChecklistRow } from '@/components/checklist/ChecklistRow';
+import { black, blue, gray, orange, white } from '@/constants/Colors';
+import { ProcedureModel } from '@/models/ProcedureModel';
 // const listaCadenas = ['manzana', 'naranja', 'banana', 'mandarina'];
 // const input = 'manznaa';  // Cadena con un error
 export default function HomeScreen() {
 
-  const { setTaskList, taskList, recognized, started, isListening, results } = useVoiceRecognitionContext()
+  const { setProcedure, procedure, recognized, started, isListening, results } = useVoiceRecognitionContext()
 
 
   useEffect(() => {
@@ -23,10 +26,10 @@ export default function HomeScreen() {
       // speak()
 
       try {
-        const tasklist = await getTasks()
-        console.log('tasklist', tasklist)
-        setTaskList(tasklist)
-        const TaskListNames = tasklist.map((item) => {
+        const procedure = await getProcedure()
+        console.log('procedure', procedure)
+        setProcedure(procedure)
+        const TaskListNames = procedure.tasks.map((item) => {
           return item.taskName
         })
 
@@ -41,54 +44,60 @@ export default function HomeScreen() {
   }, [])
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.text, { color: 'white' }]}>{started}</Text>
-      {/* <Text style={[styles.text,{color:'white'}]}>{recognized}recognizzed</Text> */}
-      <View style={styles.listContainer}>
-        {taskList ? taskList.map((item: TaskModel, i: number) => {
-          return (
-            <View key={item.taskName} style={styles.listRow}>
-              <Text style={[styles.text, { color: 'white', textAlign: 'left', maxWidth: '90%' }]}>{item.taskName}</Text>
+    <SafeAreaView style={styles.container}>
+      {
+        procedure ? <>
+          <Text style={[styles.text, { color: white }]}>{started}</Text>
+          {/* <Text style={[styles.text,{color:'white'}]}>{recognized}recognizzed</Text> */}
+          <Text style={[styles.title, { color: orange }]}>{procedure?.procedureName}</Text>
 
-              {item.done ?
-                <MaterialCommunityIcons name="checkbox-marked" size={24} color="white" /> :
-                <MaterialCommunityIcons name="checkbox-blank-outline" size={24} color="white" />
-              }
+          <FlatList
+            style={styles.listContainer}
+            data={procedure.tasks}
+            renderItem={({ item, index }) => <ChecklistRow task={item} index={index} />}
+            // ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: "#EAEAEA", width: "25%", alignSelf: "center" }} />}
+            keyExtractor={(item) => item.taskName}
+          />
 
-            </View>
-          ) 
-        })
-        : null
+          <Text style={[styles.resultsText, { backgroundColor: results && results.length ? white : 'transparent' }]}>
+            {(results && results.length) ? `Tu: ${results[0]}` : ''}
+          </Text>
+        </> :
+          <View style={{ height: "100%", alignItems: "center", justifyContent: "center" }}>
+            <Text style={[styles.text, { color: orange }]}>Escanea un procedimiento para continuar</Text>
+          </View>
       }
 
-      </View>
-      <Text style={[styles.resultsText, { backgroundColor: results && results.length ? 'white' : 'transparent' }]}>
-        {(results && results.length) ? `Tu: ${results[0]}` : ''}
-      </Text>
-
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 5,
-    backgroundColor: "#0E0E0E"
+    paddingHorizontal: 10,
+    backgroundColor: gray
+  },
+  title: {
+    fontFamily: 'Repsol-Regular',
+    fontSize: 26,
+    textAlign: 'center',
+    color: orange,
+    borderRadius: 20,
+    marginBottom: 20
   },
   text: {
+    fontFamily: 'Repsol-Regular',
     fontSize: 18,
-    marginVertical: 10,
     textAlign: 'center',
-    color: "black",
+    color: black,
     padding: 10,
     borderRadius: 20
   },
   buttonSpeech: {
-    color: "white",
+    color: white,
     backgroundColor: "rgba(18, 58, 204, 1)",
     width: 200,
     height: 200,
@@ -96,26 +105,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 4,
-    shadowColor: "white",
+    shadowColor: white,
   },
   listContainer: {
-    borderWidth: 1,
-    flex: 1,
+    borderRadius: 8,
     width: '100%',
-  },
-  listRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderColor: 'white',
-    alignItems: 'center',
-    paddingHorizontal: 5
   },
   resultsText: {
     fontSize: 18,
     marginVertical: 10,
     textAlign: 'center',
-    color: "black",
+    color: black,
     padding: 10,
     borderRadius: 20,
     position: 'absolute',
