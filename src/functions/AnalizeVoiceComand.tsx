@@ -3,6 +3,7 @@ import { findMostLikelyWord, getWordWithDistance } from "./FindTask"
 const mark = ['marca', 'marcar', 'check', 'apunta', 'apuntar', 'selecciona', 'seleccionar']
 const unmark = ['desmarca', 'desmarcar', 'uncheck', 'desapunta', 'desapuntar', 'deselecciona', 'deseleccionar']
 const read = ['lee', 'leer', 'cuenta']
+const check = ['comprobar','revisar']
 
 /**
  * Cada comando de voz tiene asociado un conjunto de palabras que lo identifican
@@ -11,14 +12,16 @@ const read = ['lee', 'leer', 'cuenta']
 export enum VoiceCommandAction {
     Mark = 'mark',
     Unmark = 'unmark',
-    Read = 'read'
+    Read = 'read',
+    Check = 'check',
 }
 
 // Definir las palabras asociadas a cada comando de forma más compacta
 const commandWordsGroups: { [key in VoiceCommandAction]: string[] } = {
     [VoiceCommandAction.Mark]: mark,
     [VoiceCommandAction.Unmark]: unmark,
-    [VoiceCommandAction.Read]: read
+    [VoiceCommandAction.Read]: read,
+    [VoiceCommandAction.Check]: check
 };
 
 const getAllCommands = () => {
