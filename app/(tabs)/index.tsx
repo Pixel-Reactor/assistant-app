@@ -13,35 +13,8 @@ import { ProcedureModel } from '@/models/ProcedureModel';
 // const input = 'manznaa';  // Cadena con un error
 export default function HomeScreen() {
 
-  const { setProcedure, procedure, recognized, started, isListening, results } = useVoiceRecognitionContext()
+  const { procedure, started, results } = useVoiceRecognitionContext()
 
-
-  useEffect(() => {
-    const init = async () => {
-      // const speak = () => {
-      //   const thingToSay = 'Hola Equipo';
-      //   Speech.speak(thingToSay, { language: 'es-ES' });
-      // };
-
-      // speak()
-
-      try {
-        const procedure = await getProcedure()
-        console.log('procedure', procedure)
-        setProcedure(procedure)
-        const TaskListNames = procedure.tasks.map((item) => {
-          return item.taskName
-        })
-
-        findTask(TaskListNames, 'repostar')
-      }
-      catch (error) {
-        console.log('error', error)
-      }
-
-    }
-    init()
-  }, [])
 
   return (
     <SafeAreaView style={styles.container}>

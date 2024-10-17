@@ -4,7 +4,7 @@ import { Button, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
 import { useVoiceRecognitionContext } from '@/contexts/VoiceRecognitionContext';
-import { getTasks } from '@/api/api';
+import { getProcedure } from '@/api/api';
 export default function TabTwoScreen() {
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
@@ -12,7 +12,7 @@ export default function TabTwoScreen() {
   const [isCapturing, setIsCapturing] = useState(false);
   const [isLoading, setisLoading] = useState(false)
   const [photoUri, setPhotoUri] = useState(null); // Estado para guardar la URI de la foto
-  const { setTaskList } = useVoiceRecognitionContext()
+  const { setProcedure } = useVoiceRecognitionContext()
 
   if (!permission) {
 
@@ -34,10 +34,10 @@ export default function TabTwoScreen() {
   }
   const ShotAndUpload = async () => {
     setisLoading(true);
-    const list = await getTasks()
+    const procedure = await getProcedure()
 
     setTimeout(() => {
-      setTaskList(list)
+      setProcedure(procedure)
       router.navigate('/(tabs)/')
       setisLoading(false)
     }, 3000);

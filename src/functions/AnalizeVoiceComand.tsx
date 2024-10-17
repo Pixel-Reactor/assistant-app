@@ -90,7 +90,7 @@ const getVoiceCommand = (voicetext: string) => {
 const getTaskName = (voicetext: string, command: string) => {
 
     //Split the voicetext by the command, so all the right part of the command must be the task name
-    return voicetext.slice(voicetext.indexOf(command) + 1);
+    return voicetext.slice(voicetext.indexOf(command) + command.length + 1);
 
 }
 
@@ -118,7 +118,7 @@ export const analizeVoice = (voicetext: string[]) => {
     }
 
     const tasknameDetected = getTaskName(voicetextInput, command)
-
+    console.log('tasknameDetected', tasknameDetected)
     // console.log('voiceText', voicetext[0])
     // console.log('indices de comando y tarea', indexCommandMark, indextaskCommand)
 

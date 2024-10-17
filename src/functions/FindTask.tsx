@@ -36,8 +36,10 @@ export function findMostLikelyWord(list: string[], str: string) {
     if (str === item) {
       return item
     }
-
-    const distancia = levenshtein(str, item);
+    const shorthenItem = item.substring(0, str.length)
+    console.log('str', str)
+    console.log('shorthenItem', shorthenItem)
+    const distancia = levenshtein(str, shorthenItem);
     if (distancia < closerDistance) {
       closerDistance = distancia;
       mostLikelyWord = item;
