@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import React, { useState } from 'react';
 
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import { Colors } from '@/constants/Colors';
+import { blue, Colors, orange, white } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { useVoiceRecognitionContext } from '@/contexts/VoiceRecognitionContext';
@@ -11,7 +11,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { recognized, startRecognizing, stopRecognizing, started, isListening, results } = useVoiceRecognitionContext()
+  const { recognized, startRecognizing, stopRecognizing, started, isListening, results, procedure } = useVoiceRecognitionContext()
   const [isCamaraOpen, setisCamaraOpen] = useState(false)
   return (
     <View style={styles.container}>
@@ -19,12 +19,14 @@ export default function TabLayout() {
         screenOptions={{
           tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
           headerShown: true,
-         
+          tabBarShowLabel: false,
+          tabBarLabelStyle: {fontFamily: "Repsol-Regular"}
         }}>
         <Tabs.Screen
           name="index"
           options={{
             title: 'Home',
+            headerShown: false,
             tabBarIcon: ({ color, focused }) => (
               <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
             ),
@@ -38,13 +40,14 @@ export default function TabLayout() {
           }}
           options={{
             title: 'Scan',
+            headerShown: false,
             tabBarIcon: ({ color, focused }) => (
-              <MaterialIcons name="photo-camera" size={30} color={focused ? 'white' : 'gray'} />
+              <MaterialIcons name="photo-camera" size={30} color={focused ? blue : 'gray'} />
             ),
           }}
         />
       </Tabs>
-      {!isCamaraOpen && <TouchableOpacity style={[styles.buttonSpeech, { borderWidth: 5, borderColor: isListening ? 'green' : 'transparent' }]} onPress={isListening ? stopRecognizing : startRecognizing} >
+      {!isCamaraOpen && procedure && <TouchableOpacity style={[styles.buttonSpeech, { borderWidth: 5, borderColor: isListening ? orange : 'transparent' }]} onPress={isListening ? stopRecognizing : startRecognizing} >
         <Text style={styles.text}><FontAwesome name="microphone" size={30} color="white" /></Text>
       </TouchableOpacity>}
     </View>
@@ -60,15 +63,15 @@ const styles = StyleSheet.create({
    
   },
   buttonSpeech: {
-    color: "white",
-    backgroundColor: "rgba(18, 58, 204, 1)",
+    color: white,
+    backgroundColor: blue,
     width: 80,
     height: 80,
     borderRadius: 60,
     justifyContent: "center",
     alignItems: "center",
     elevation: 10,
-    shadowColor: "white",
+    shadowColor: white,
     position: 'absolute',
     bottom: 20,
     left: '50%',
@@ -80,7 +83,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginVertical: 10,
     textAlign: 'center',
-    color: "white",
+    color: white,
     fontWeight: "bold"
   },
 });

@@ -1,10 +1,10 @@
-import taklist from '@/mock-data/tasklist.json'
-import { TaskModel } from '@/models/TaskModel'
+import procedure from '@/mock-data/procedure.json'
+import { ProcedureModel } from '@/models/ProcedureModel'
 
-const getTasks = async () => {
-    return taklist as TaskModel[]
+const getProcedure = async () => {
+    return procedure as ProcedureModel
 }
 
 export {
-    getTasks
+    getProcedure
 }
