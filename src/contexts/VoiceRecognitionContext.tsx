@@ -61,8 +61,6 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
                 destroyVoice()
                 setStarted('Reconocimiento de voz detenido');
                 stopRecognizing()
-                
-             
             }
 
             Voice.onSpeechResults = (result) => {
@@ -159,6 +157,12 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
         const TaskListNames = procedure.tasks.map((item: TaskModel) => {
             return item.taskName
         })
+
+        if(voiceAnalysisResult.commandActionOptions?.minTaskLength&&voiceAnalysisResult.task.length<voiceAnalysisResult.commandActionOptions?.minTaskLength){
+            console.warn('No se ha detectado una tarea valida: ' +voiceAnalysisResult.task)
+            return
+        }
+
         const taskFound = findTask(TaskListNames, voiceAnalysisResult.task);
 
         if (!taskFound) {
@@ -220,6 +224,7 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
         const runLoop = async () => {
 
             if (!procedure || !procedure?.tasks) { return }
+
             setautomatedCheckList(true)
             for (let i = 0; i < procedure.tasks.length; i++) {
                 console.log(`Has completado la tarea: ${procedure.tasks[i].taskName}?`);

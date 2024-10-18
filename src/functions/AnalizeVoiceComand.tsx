@@ -3,7 +3,7 @@ import { findMostLikelyWord, getWordWithDistance } from "./FindTask"
 const mark = ['marca', 'marcar', 'check', 'apunta', 'apuntar', 'selecciona', 'seleccionar']
 const unmark = ['desmarca', 'desmarcar', 'uncheck', 'desapunta', 'desapuntar', 'deselecciona', 'deseleccionar']
 const read = ['lee', 'leer', 'cuenta']
-const check = ['comprobar','revisar']
+const check = ['comprobar','revisar','chequear']
 
 /**
  * Cada comando de voz tiene asociado un conjunto de palabras que lo identifican
@@ -42,9 +42,27 @@ function getVoiceCommandAction(word: string): VoiceCommandAction | null {
     return commandWords[word] || null;
 }
 
+/**
+ * Función para obtener las opciones del comando de voz asociado a una palabra.
+ */
+function getVoiceCommandActionOptions(command: VoiceCommandAction | null): VoiceCommandActionOptions | null {
+    switch (command) {
+        case VoiceCommandAction.Mark:
+            return { minTaskLength: 10 };
+        case VoiceCommandAction.Unmark:
+            return { minTaskLength: 10 };
+        default:
+            return null;
+    }
+}
+
+export interface VoiceCommandActionOptions {
+    minTaskLength?: number //longitud minima que debe tener una tarea para poder lanzar el comando
+}
 
 export interface VoiceAnalysisResult {
     commandAction: VoiceCommandAction,
+    commandActionOptions?: VoiceCommandActionOptions
     command: string,
     task: string
 }
@@ -69,7 +87,8 @@ const getVoiceCommand = (voicetext: string) => {
 
     if (matchedWords.length == 0) {
 
-        if (wordsWithDistance.length > 0) {
+        //Si la palabra no coincide exactamente, buscamos la mas proxima, pero tiene que tener proximidad de 1
+        if (wordsWithDistance.length <= 1) {
             const commandFound = findMostLikelyWord(allCommands, wordsWithDistance[0].word)
             if (commandFound) {
                 return commandFound
@@ -125,8 +144,11 @@ export const analizeVoice = (voicetext: string[]) => {
     // console.log('voiceText', voicetext[0])
     // console.log('indices de comando y tarea', indexCommandMark, indextaskCommand)
 
+    const commandAction = getVoiceCommandAction(command)
+
     return {
-        commandAction: getVoiceCommandAction(command),
+        commandAction: commandAction,
+        commandActionOptions: getVoiceCommandActionOptions(commandAction),
         command: command,
         task: tasknameDetected
     } as VoiceAnalysisResult
