@@ -51,7 +51,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 10,
-    backgroundColor: gray
+    backgroundColor: gray,
+    flex:1,
   },
   title: {
     fontFamily: 'Repsol-Regular',

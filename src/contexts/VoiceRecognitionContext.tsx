@@ -218,20 +218,25 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
         };
 
         const runLoop = async () => {
-
+            await new Promise(resolve => {
+                Speech.speak(`Vamos a revisar la lista. Contesta si o no para que la marque como completada`, {
+                    onDone:resolve,
+                    rate:1.2
+                });
+            });
             if (!procedure || !procedure?.tasks) { return }
             setautomatedCheckList(true)
             for (let i = 0; i < procedure.tasks.length; i++) {
-                console.log(`Has completado la tarea: ${procedure.tasks[i].taskName}?`);
+                console.log(`Completaste la tarea: ${procedure.tasks[i].taskName}?`);
 
                 // Espera a que el texto se haya hablado antes de iniciar el reconocimiento de voz
                 await new Promise(resolve => {
-                    Speech.speak(`Has completado la tarea: ${procedure.tasks[i].taskName}`, {
-                        onDone:resolve
+                    Speech.speak(`¿Completaste la tarea: ${procedure.tasks[i].taskName}?`, {
+                        onDone:resolve,
+                        rate:1.2
                     });
                 });
-
-
+                
                 const userResponse:SpeechResultsEvent = await waitForVoiceResponse();
                 
                 console.log('respuesta del usuario',userResponse)
@@ -240,17 +245,28 @@ const VoiceRecognitionProvider: FC<Props> = ({ children }) => {
                     console.log(`Marcando la tarea ${procedure.tasks[i]} como completada.`);
                     await new Promise(resolve => {
                         Speech.speak(`Marcando si`, {
-                            onDone:resolve
+                            onDone:resolve,
+                            rate:1.2
                         });
                     });
                     setTaskStatus(procedure.tasks[i].taskName, true);
-                } else {
+                }
+                else if(userResponse.value && (userResponse?.value[0].includes('para') || userResponse?.value[0].includes('stop'))){
+                   
+                    Speech.speak(`Interrumpiendo la revisión de la lista.`, {
+                        rate:1.2
+                    });
+                    break;
+                }
+                else {
                     console.log(`La tarea ${procedure.tasks[i].taskName} no fue marcada como completada.`);
                     await new Promise(resolve => {
                         Speech.speak(`Marcando no `, {
-                            onDone:resolve
+                            onDone:resolve,
+                            rate:1.2
                         });
                     });
+                    setTaskStatus(procedure.tasks[i].taskName, false);
                 }
             }
 
