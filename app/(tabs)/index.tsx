@@ -1,20 +1,13 @@
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import React, { useEffect, useState } from 'react';
-import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
-import { getProcedure } from '@/api/api';
-import { useVoiceRecognitionContext } from '@/contexts/VoiceRecognitionContext';
-import { findTask } from '@/functions/FindTask';
-import { TaskModel } from '@/models/TaskModel';
 import { ChecklistRow } from '@/components/checklist/ChecklistRow';
-import { black, blue, gray, orange, white } from '@/constants/Colors';
-import { ProcedureModel } from '@/models/ProcedureModel';
-// const listaCadenas = ['manzana', 'naranja', 'banana', 'mandarina'];
-// const input = 'manznaa';  // Cadena con un error
+import { black, gray, orange, white } from '@/constants/Colors';
+import { useVoiceRecognitionContext } from '@/contexts/VoiceRecognitionContext';
+
 export default function HomeScreen() {
 
   const { procedure, started, results } = useVoiceRecognitionContext()
-
 
   return (
     <SafeAreaView style={styles.container}>

@@ -23,7 +23,7 @@ export default function TabTwoScreen() {
   if (!permission.granted) {
 
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, {alignItems: 'center'}]}>
         <View style={{backgroundColor: white, borderRadius: 8, width: "80%", padding: 10}}>
           <Text style={styles.message}>Necesitamos permisos para acceder a tu cámara</Text>
           <TouchableOpacity onPress={requestPermission} style={styles.button} >
@@ -39,18 +39,19 @@ export default function TabTwoScreen() {
   }
   const ShotAndUpload = async () => {
     setisLoading(true);
-    const procedure = await getProcedure()
 
-    setTimeout(() => {
-      setProcedure(procedure)
-      router.navigate('/(tabs)/')
-      setisLoading(false)
-    }, 3000);
     if (cameraRef.current && !isCapturing) {
       setIsCapturing(true);
       try {
         const photo = await cameraRef?.current?.takePictureAsync({ base64: true });
-        console.log(photo.uri)
+        console.log("photo uri", photo.uri)
+        const procedure = await getProcedure(photo.uri)
+
+        setTimeout(() => {
+          setProcedure(procedure)
+          router.navigate('/(tabs)/')
+          setisLoading(false)
+        }, 3000);
 
       } catch (error) {
         console.log(error)
@@ -81,7 +82,7 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   message: {
     fontFamily: 'Repsol-Regular',
