@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   resultsText: {
+    fontFamily: 'Repsol-Regular',
     fontSize: 18,
     marginVertical: 10,
     textAlign: 'center',

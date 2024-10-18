@@ -5,6 +5,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
 import { useVoiceRecognitionContext } from '@/contexts/VoiceRecognitionContext';
 import { getProcedure } from '@/api/api';
+import { black, blue, orange, white } from '@/constants/Colors';
 export default function TabTwoScreen() {
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
@@ -23,8 +24,12 @@ export default function TabTwoScreen() {
 
     return (
       <View style={styles.container}>
-        <Text style={styles.message}>We need your permission to show the camera</Text>
-        <Button onPress={requestPermission} title="grant permission" />
+        <View style={{backgroundColor: white, borderRadius: 8, width: "80%", padding: 10}}>
+          <Text style={styles.message}>Necesitamos permisos para acceder a tu cámara</Text>
+          <TouchableOpacity onPress={requestPermission} style={styles.button} >
+            <Text style={styles.buttonText}>Conceder Permisos</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -77,11 +82,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-
   },
   message: {
+    fontFamily: 'Repsol-Regular',
+    fontSize: 18,
+    color: black,
+    textAlign: 'left',
+    marginBottom: 10
+  },
+  button: {
+    backgroundColor: blue,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    margin: 10,
+    borderRadius: 8
+  },
+  buttonText: {
+    fontFamily: 'Repsol-Regular',
+    textAlignVertical: 'center',
+    fontSize: 18,
+    color: white,
     textAlign: 'center',
-    paddingBottom: 10,
   },
   camera: {
     flex: 1,
@@ -127,6 +149,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   text: {
+    fontFamily: 'Repsol-Regular',
     fontSize: 24,
     fontWeight: 'bold',
     color: 'white',
@@ -141,11 +164,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   loaderText: {
+    fontFamily: 'Repsol-Regular',
     fontSize: 20,
-    color: 'black',
+    color: orange,
     backgroundColor: 'white',
     padding: 10,
-    borderRadius: 50,
+    borderRadius: 8,
 
   }
 });
